@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VINTAGE_STORE | متجر الزبائن</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #ffffff; color: #0A192F; }
+    .navy-bg { background-color: #0A192F; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+
+  <header class="sticky top-0 z-40 navy-bg text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <div onclick="navigate('STORE')" class="flex items-center gap-3 cursor-pointer">
+        <img id="nav-logo" src="" class="hidden w-10 h-10 rounded-full object-cover border border-white/30" />
+        <div id="nav-logo-placeholder" class="w-10 h-10 rounded-full bg-white text-[#0A192F] flex items-center justify-center font-extrabold text-xl">V</div>
+        <span id="nav-store-name" class="text-xl sm:text-2xl font-extrabold tracking-widest uppercase">VINTAGE_STORE</span>
+      </div>
+
+      <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
+        <button onclick="filterCategory('ALL')" class="hover:text-white">الكل</button>
+        <button onclick="filterCategory('Men')" class="hover:text-white">Men</button>
+        <button onclick="filterCategory('Women')" class="hover:text-white">Women</button>
+        <button onclick="filterCategory('Kids')" class="hover:text-white">Kids</button>
+        <button onclick="filterCategory('Accessories')" class="hover:text-white">Accessories</button>
+        <button onclick="filterCategory('New Arrivals')" class="hover:text-white">New Arrivals</button>
+        <button onclick="filterCategory('Best Sellers')" class="hover:text-white">Best Sellers</button>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <button onclick="navigate('WISHLIST')" class="relative p-2.5 hover:bg-white/10 rounded-full">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+          <span id="wishlist-badge" class="hidden absolute top-1 right-1 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+        </button>
+
+        <button onclick="navigate('CART')" class="relative p-2.5 hover:bg-white/10 rounded-full">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span id="cart-badge" class="hidden absolute top-1 right-1 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+        </button>
+
+        <button onclick="navigate('MY_ORDERS')" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg font-bold">طلباتي</button>
+        <div id="auth-area"></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="app-root" class="min-h-[80vh]"></main>
+
+  <footer class="navy-bg text-slate-300 py-10 px-6 mt-20 text-center text-sm">
+    <p id="footer-store-name" class="text-white font-extrabold text-lg mb-2">VINTAGE_STORE</p>
+    <p class="text-slate-400">الدفع عند الاستلام (Cash on Delivery) متاح لجميع الطلبات</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDJt6U24C8-rDO2bfzB-7j94f5nfiley6c",
+      authDomain: "vintage-store-c15cc.firebaseapp.com",
+      databaseURL: "https://vintage-store-c15cc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "vintage-store-c15cc",
+      storageBucket: "vintage-store-c15cc.firebasestorage.app",
+      messagingSenderId: "606228990844",
+      appId: "1:606228990844:web:796fa856cde24e5c2932f9",
+      measurementId: "G-TBFQSHFXS0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const dbRef = ref(getDatabase(app), "vintage_store_db");
+
+    const defaultDB = {
+      settings: { storeName: "VINTAGE_STORE", logoUrl: "", storeUrl: "" },
+      users: [{ id: "u1", name: "أحمد الزبون", email: "user@vintage.com", password: "123", phone: "0501112233", role: "CUSTOMER" }],
+      coupons: [{ id: "c1", code: "VINTAGE20", discountPct: 20, active: true }],
+      products: [
+        {
+          id: "p1",
+          name: "معطف صوف كحلي كلاسيكي",
+          description: "معطف فاخر مصنوع من الصوف الطبيعي بقصة عصرية أنيقة.",
+          price: 185,
+          category: "Men",
+          isFeatured: true,
+          image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80",
+          variants: [
+            { id: "v1", color: "كحلي", colorHex: "#0A192F", size: "M", stock: 10 },
+            { id: "v2", color: "كحلي", colorHex: "#0A192F", size: "L", stock: 7 }
+          ]
+        },
+        {
+          id: "p2",
+          name: "بليزر أبيض ناصع",
+          description: "بليزر نسائي بتصميم مينيمال راقي وأزرار مخفية.",
+          price: 145,
+          category: "Women",
+          isFeatured: true,
+          image: "https://images.unsplash.com/photo-1548624313-0396c75e4b1a?auto=format&fit=crop&w=800&q=80",
+          variants: [
+            { id: "v3", color: "أبيض", colorHex: "#FFFFFF", size: "S", stock: 8 },
+            { id: "v4", color: "أبيض", colorHex: "#FFFFFF", size: "M", stock: 5 }
+          ]
+        }
+      ],
+      orders: []
+    };
+
+    let currentDB = JSON.parse(JSON.stringify(defaultDB));
+
+    function normalizeDB(data) {
+      return {
+        settings: data?.settings || defaultDB.settings,
+        users: data?.users || [],
+        coupons: data?.coupons || [],
+        products: data?.products || [],
+        orders: data?.orders || []
+      };
+    }
+
+    function saveDB(newDB) {
+      currentDB = normalizeDB(newDB);
+      set(dbRef, currentDB);
+    }
+
+    onValue(dbRef, (snapshot) => {
+      const val = snapshot.val();
+      if (!val) {
+        saveDB(defaultDB);
+      } else {
+        currentDB = normalizeDB(val);
+        render();
+      }
+    });
+
+    let state = {
+      view: "STORE",
+      currentUser: JSON.parse(sessionStorage.getItem("cust_user") || "null"),
+      cart: JSON.parse(localStorage.getItem("cust_cart") || "[]"),
+      wishlist: JSON.parse(localStorage.getItem("cust_wish") || "[]"),
+      myOrderNumbers: JSON.parse(localStorage.getItem("my_order_numbers") || "[]"),
+      filters: { category: "ALL", search: "", maxPrice: 500, size: "ALL" },
+      selectedProductId: null,
+      selectedVariantId: null,
+      qty: 1,
+      appliedCoupon: null
+    };
+
+    window.showToast = function(msg, isError = false) {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      el.className = `px-6 py-3 rounded-xl shadow-xl text-sm font-bold fade-in ${isError ? "bg-red-600 text-white" : "navy-bg text-white border border-white/20"}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    };
+
+    window.navigate = function(view, id = null) {
+      state.view = view;
+      if (view === "PRODUCT_DETAIL" && id) {
+        state.selectedProductId = id;
+        const prod = currentDB.products.find(p => p.id === id);
+        state.selectedVariantId = prod?.variants?.[0]?.id || null;
+        state.qty = 1;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      render();
+    };
+
+    window.filterCategory = function(cat) {
+      state.filters.category = cat;
+      navigate("STORE");
+    };
+
+    window.toggleWishlist = function(id) {
+      if (state.wishlist.includes(id)) {
+        state.wishlist = state.wishlist.filter(x => x !== id);
+        showToast("تمت الإزالة من المفضلة");
+      } else {
+        state.wishlist.push(id);
+        showToast("تمت الإضافة للمفضلة ❤️");
+      }
+      localStorage.setItem("cust_wish", JSON.stringify(state.wishlist));
+      render();
+    };
+
+    window.addToCart = function(productId, variantId, quantity = 1, goCheckout = false) {
+      const product = currentDB.products.find(p => p.id === productId);
+      const variant = (product?.variants || []).find(v => v.id === variantId);
+
+      if (!variant || variant.stock < quantity) {
+        showToast("الكمية غير متوفرة في المخزون", true);
+        return;
+      }
+
+      const existing = state.cart.find(i => i.variantId === variantId);
+      if (existing) {
+        if (existing.quantity + quantity > variant.stock) {
+          showToast("تجاوزت الحد المتوفر بالمخزون", true);
+          return;
+        }
+        existing.quantity += quantity;
+      } else {
+        state.cart.push({
+          productId: product.id,
+          variantId: variant.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          color: variant.color,
+          size: variant.size,
+          quantity
+        });
+      }
+
+      localStorage.setItem("cust_cart", JSON.stringify(state.cart));
+      showToast("تمت الإضافة إلى السلة 🛍️");
+      render();
+      if (goCheckout) navigate("CHECKOUT");
+    };
+
+    window.removeFromCart = function(variantId) {
+      state.cart = state.cart.filter(x => x.variantId !== variantId);
+      localStorage.setItem("cust_cart", JSON.stringify(state.cart));
+      render();
+    };
+
+    window.applyCouponCode = function() {
+      const code = document.getElementById("cp-in").value.trim().toUpperCase();
+      const c = currentDB.coupons.find(x => x.code === code && x.active !== false);
+      if (c) {
+        state.appliedCoupon = c;
+        showToast("تم تطبيق الخصم");
+        render();
+      } else {
+        showToast("كود غير صالح", true);
+      }
+    };
+
+    window.placeOrder = function(e) {
+      e.preventDefault();
+      const name = document.getElementById("chk-name").value.trim();
+      const phone = document.getElementById("chk-phone").value.trim();
+      const email = document.getElementById("chk-email").value.trim();
+      const address = document.getElementById("chk-address").value.trim();
+
+      for (const item of state.cart) {
+        const prod = currentDB.products.find(p => p.id === item.productId);
+        const variant = (prod?.variants || []).find(v => v.id === item.variantId);
+        if (!variant || variant.stock < item.quantity) {
+          showToast(`نفذت الكمية للمنتج: ${item.name}`, true);
+          return;
+        }
+        variant.stock -= item.quantity;
+      }
+
+      const subtotal = state.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+      const discount = state.appliedCoupon ? (subtotal * state.appliedCoupon.discountPct) / 100 : 0;
+      const orderNum = "VNT-" + Math.floor(10000 + Math.random() * 90000);
+
+      currentDB.orders.unshift({
+        id: "ord_" + Date.now(),
+        orderNumber: orderNum,
+        userId: state.currentUser?.id || null,
+        customerName: name,
+        customerPhone: phone,
+        customerEmail: email,
+        shippingAddress: address,
+        items: [...state.cart],
+        totalAmount: Math.max(0, subtotal - discount),
+        status: "NEW",
+        createdAt: new Date().toLocaleString("ar-EG")
+      });
+
+      state.myOrderNumbers.unshift(orderNum);
+      localStorage.setItem("my_order_numbers", JSON.stringify(state.myOrderNumbers));
+
+      saveDB(currentDB);
+      state.cart = [];
+      state.appliedCoupon = null;
+      localStorage.setItem("cust_cart", "[]");
+      showToast("تم إرسال طلبك بنجاح! وصل للإدارة الآن ✅");
+      navigate("MY_ORDERS");
+    };
+
+    window.handleAuth = function(e, mode) {
+      e.preventDefault();
+      if (mode === "LOGIN") {
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-pass").value.trim();
+        const user = currentDB.users.find(u => u.email === email && u.password === password);
+        if (!user) return showToast("بيانات الدخول غير صحيحة", true);
+        state.currentUser = user;
+        sessionStorage.setItem("cust_user", JSON.stringify(user));
+        showToast(`أهلاً بك ${user.name}`);
+        navigate("STORE");
+      } else {
+        const name = document.getElementById("reg-name").value.trim();
+        const phone = document.getElementById("reg-phone").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-pass").value.trim();
+        const newUser = { id: "u_" + Date.now(), name, email, password, phone, role: "CUSTOMER" };
+        currentDB.users.push(newUser);
+        saveDB(currentDB);
+        state.currentUser = newUser;
+        sessionStorage.setItem("cust_user", JSON.stringify(newUser));
+        showToast("تم إنشاء الحساب بنجاح");
+        navigate("STORE");
+      }
+    };
+
+    window.logoutCustomer = function() {
+      state.currentUser = null;
+      sessionStorage.removeItem("cust_user");
+      render();
+    };
+
+    window.updateSearch = function(val) { state.filters.search = val; render(); };
+    window.updateSize = function(val) { state.filters.size = val; render(); };
+    window.updateMaxPrice = function(val) { state.filters.maxPrice = Number(val); render(); };
+    window.selectVariant = function(id) { state.selectedVariantId = id; render(); };
+    window.updateQty = function(val) { state.qty = Number(val); };
+
+    function render() {
+      const db = currentDB;
+      document.getElementById("nav-store-name").textContent = db.settings.storeName;
+      document.getElementById("footer-store-name").textContent = db.settings.storeName;
+
+      const logoImg = document.getElementById("nav-logo");
+      const logoPlace = document.getElementById("nav-logo-placeholder");
+      if (db.settings.logoUrl) {
+        logoImg.src = db.settings.logoUrl;
+        logoImg.classList.remove("hidden");
+        logoPlace.classList.add("hidden");
+      } else {
+        logoImg.classList.add("hidden");
+        logoPlace.classList.remove("hidden");
+        logoPlace.textContent = db.settings.storeName.charAt(0);
+      }
+
+      const cartCount = state.cart.reduce((s, i) => s + i.quantity, 0);
+      const cb = document.getElementById("cart-badge");
+      cb.textContent = cartCount;
+      cb.classList.toggle("hidden", cartCount === 0);
+
+      const wb = document.getElementById("wishlist-badge");
+      wb.textContent = state.wishlist.length;
+      wb.classList.toggle("hidden", state.wishlist.length === 0);
+
+      document.getElementById("auth-area").innerHTML = state.currentUser
+        ? `<button onclick="logoutCustomer()" class="text-xs bg-white text-[#0A192F] px-3 py-2 rounded-lg font-bold">خروج (${state.currentUser.name})</button>`
+        : `<button onclick="navigate('AUTH')" class="text-xs bg-white text-[#0A192F] px-4 py-2 rounded-lg font-bold">دخول</button>`;
+
+      const root = document.getElementById("app-root");
+
+      if (state.view === "STORE") {
+        const filtered = db.products.filter(p => {
+          const matchCat = state.filters.category === "ALL" || p.category === state.filters.category;
+          const matchSearch = p.name.toLowerCase().includes(state.filters.search.toLowerCase());
+          const matchPrice = p.price <= state.filters.maxPrice;
+          const matchSize = state.filters.size === "ALL" || (p.variants || []).some(v => v.size === state.filters.size);
+          return matchCat && matchSearch && matchPrice && matchSize;
+        });
+
+        root.innerHTML = `
+          <section class="navy-bg text-white py-16 px-6">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
+              <div class="space-y-5">
+                <span class="text-xs tracking-widest uppercase border border-white/30 px-3 py-1 rounded-full">COLLECTION 2026</span>
+                <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">أناقة خالدة بتصميم عصري فاخر</h1>
+                <p class="text-slate-300">استخدم كود <b class="text-white underline">VINTAGE20</b> للحصول على خصم 20% على طلبك.</p>
+                <a href="#catalog" class="inline-block bg-white text-[#0A192F] px-8 py-3.5 rounded-xl font-extrabold">تسوق الآن</a>
+              </div>
+              <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80" class="hidden lg:block rounded-3xl h-80 w-full object-cover" />
+            </div>
+          </section>
+
+          <section id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+            <div class="bg-slate-50 p-4 rounded-2xl border mb-8 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
+              <input type="text" placeholder="ابحث عن منتج..." value="${state.filters.search}" oninput="updateSearch(this.value)" class="sm:col-span-2 border rounded-xl px-4 py-2.5 text-sm" />
+              <select onchange="updateSize(this.value)" class="border rounded-xl px-3 py-2.5 text-sm bg-white font-bold">
+                <option value="ALL">جميع المقاسات</option>
+                <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
+              </select>
+              <div>
+                <span class="text-xs font-bold block">السعر الأقصى: $${state.filters.maxPrice}</span>
+                <input type="range" min="20" max="500" value="${state.filters.maxPrice}" onchange="updateMaxPrice(this.value)" class="w-full accent-[#0A192F]" />
+              </div>
+            </div>
+
+            ${filtered.length === 0 ? `<p class="text-center py-16 text-slate-500 font-bold">لا توجد منتجات حالياً</p>` : `
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                ${filtered.map(p => {
+                  const stock = (p.variants || []).reduce((s, v) => s + v.stock, 0);
+                  const wished = state.wishlist.includes(p.id);
+                  return `
+                    <div class="bg-white rounded-2xl border overflow-hidden hover:shadow-xl transition flex flex-col">
+                      <div onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="relative aspect-[3/4] bg-slate-100 cursor-pointer overflow-hidden">
+                        <img src="${p.image}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                        ${p.isFeatured ? `<span class="absolute top-3 right-3 navy-bg text-white text-[10px] px-3 py-1 rounded-full font-bold">Featured</span>` : ""}
+                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="absolute top-3 left-3 bg-white p-2 rounded-full shadow">
+                          <i data-lucide="heart" class="w-4 h-4 ${wished ? "fill-red-500 text-red-500" : ""}"></i>
+                        </button>
+                      </div>
+                      <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <span class="text-xs text-slate-500 font-bold">${p.category} | المتوفر: ${stock}</span>
+                          <h3 onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="font-extrabold text-lg cursor-pointer hover:underline">${p.name}</h3>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t">
+                          <span class="text-2xl font-extrabold">$${p.price}</span>
+                          <button onclick="addToCart('${p.id}', '${p.variants?.[0]?.id}', 1)" ${stock === 0 ? "disabled" : ""} class="navy-bg text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40">+ للسلة</button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            `}
+          </section>
+        `;
+      }
+
+      else if (state.view === "PRODUCT_DETAIL") {
+        const p = db.products.find(x => x.id === state.selectedProductId);
+        if (!p) return navigate("STORE");
+        const v = (p.variants || []).find(x => x.id === state.selectedVariantId) || p.variants?.[0];
+        root.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 py-12 fade-in">
+            <button onclick="navigate('STORE')" class="mb-6 text-sm font-bold text-slate-600">← العودة للمتجر</button>
+            <div class="grid md:grid-cols-2 gap-10 bg-white p-6 rounded-3xl border">
+              <img src="${p.image}" class="w-full h-[450px] object-cover rounded-2xl" />
+              <div class="space-y-5 flex flex-col justify-center">
+                <span class="text-xs font-bold text-slate-500">${p.category}</span>
+                <h1 class="text-3xl font-extrabold">${p.name}</h1>
+                <p class="text-2xl font-extrabold">$${p.price}</p>
+                <p class="text-sm text-slate-600">${p.description}</p>
+                <div>
+                  <span class="text-xs font-bold block mb-2">اختر اللون والمقاس:</span>
+                  <div class="flex flex-wrap gap-2">
+                    ${(p.variants || []).map(vr => `
+                      <button onclick="selectVariant('${vr.id}')" ${vr.stock === 0 ? "disabled" : ""}
+                        class="px-4 py-2 rounded-xl border text-xs font-bold ${vr.stock === 0 ? "opacity-40" : v?.id === vr.id ? "navy-bg text-white" : ""}">
+                        ${vr.color} - ${vr.size} (${vr.stock})
+                      </button>
+                    `).join("")}
+                  </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                  <input type="number" min="1" max="${v?.stock || 1}" value="${state.qty}" onchange="updateQty(this.value)" class="w-20 border rounded-xl text-center font-bold" />
+                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, false)" class="flex-1 navy-bg text-white py-3.5 rounded-xl font-bold">Add to Cart</button>
+                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, true)" class="flex-1 border-2 border-[#0A192F] py-3.5 rounded-xl font-bold">Buy Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (state.view === "CART") {
+        const sub = state.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+        const disc = state.appliedCoupon ? (sub * state.appliedCoupon.discountPct) / 100 : 0;
+        root.innerHTML = `
+          <div class="max-w-3xl mx-auto px-4 py-12 fade-in">
+            <h2 class="text-2xl font-extrabold mb-6">سلة المشتريات</h2>
+            ${state.cart.length === 0 ? `<p class="text-center py-12 bg-slate-50 rounded-2xl">السلة فارغة</p>` : `
+              <div class="space-y-3 mb-6">
+                ${state.cart.map(i => `
+                  <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
+                    <div>
+                      <h4 class="font-bold">${i.name}</h4>
+                      <p class="text-xs text-slate-500">${i.color} | ${i.size} | الكمية: ${i.quantity}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <span class="font-bold">$${(i.price * i.quantity).toFixed(2)}</span>
+                      <button onclick="removeFromCart('${i.variantId}')" class="text-red-600 text-xs font-bold">حذف</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+              <div class="flex gap-2 mb-6">
+                <input id="cp-in" placeholder="كود الخصم (VINTAGE20)" class="flex-1 border rounded-xl px-4 py-2.5 text-sm uppercase" />
+                <button onclick="applyCouponCode()" class="bg-slate-800 text-white px-5 rounded-xl text-sm font-bold">تطبيق</button>
+              </div>
+              <div class="navy-bg text-white p-6 rounded-2xl flex justify-between items-center">
+                <div>
+                  <p class="text-xs text-slate-300">الإجمالي بعد الخصم:</p>
+                  <p class="text-2xl font-extrabold">$${(sub - disc).toFixed(2)}</p>
+                </div>
+                <button onclick="navigate('CHECKOUT')" class="bg-white text-[#0A192F] px-6 py-3 rounded-xl font-extrabold text-sm">إتمام الطلب</button>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      else if (state.view === "CHECKOUT") {
+        root.innerHTML = `
+          <div class="max-w-lg mx-auto px-4 py-12 fade-in">
+            <h2 class="text-2xl font-extrabold mb-6">إتمام الطلب (الدفع عند الاستلام)</h2>
+            <form onsubmit="placeOrder(event)" class="bg-slate-50 p-6 rounded-2xl border space-y-4">
+              <input id="chk-name" required placeholder="الاسم الكامل" value="${state.currentUser?.name || ""}" class="w-full border rounded-xl p-3 text-sm" />
+              <input id="chk-phone" required placeholder="رقم الهاتف" value="${state.currentUser?.phone || ""}" class="w-full border rounded-xl p-3 text-sm" />
+              <input id="chk-email" required type="email" placeholder="البريد الإلكتروني" value="${state.currentUser?.email || ""}" class="w-full border rounded-xl p-3 text-sm" />
+              <textarea id="chk-address" required placeholder="عنوان التوصيل بالتفصيل" class="w-full border rounded-xl p-3 text-sm"></textarea>
+              <button type="submit" class="w-full navy-bg text-white py-3.5 rounded-xl font-extrabold">تأكيد الطلب (Place Order)</button>
+            </form>
+          </div>
+        `;
+      }
+
+      else if (state.view === "MY_ORDERS") {
+        const myOrders = db.orders.filter(o => state.myOrderNumbers.includes(o.orderNumber) || (state.currentUser && o.userId === state.currentUser.id));
+        root.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 py-12 fade-in">
+            <h2 class="text-2xl font-extrabold mb-6">طلباتي وحالة التوصيل</h2>
+            ${myOrders.length === 0 ? `<p class="text-slate-500">لا توجد طلبات مسجلة لك بعد</p>` : `
+              <div class="space-y-4">
+                ${myOrders.map(o => `
+                  <div class="border p-5 rounded-2xl bg-slate-50 flex justify-between items-center">
+                    <div>
+                      <span class="font-extrabold">${o.orderNumber}</span>
+                      <span class="navy-bg text-white text-xs px-3 py-0.5 rounded-full mr-2">${o.status}</span>
+                      <p class="text-xs text-slate-500 mt-1">${(o.items || []).map(i => `${i.name} (${i.size}) × ${i.quantity}`).join(" ، ")}</p>
+                    </div>
+                    <span class="font-extrabold text-lg">$${o.totalAmount.toFixed(2)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      else if (state.view === "WISHLIST") {
+        const list = db.products.filter(p => state.wishlist.includes(p.id));
+        root.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 py-12 fade-in">
+            <h2 class="text-2xl font-extrabold mb-6">المفضلة (${list.length})</h2>
+            <div class="grid sm:grid-cols-3 gap-6">
+              ${list.map(p => `
+                <div class="border rounded-2xl overflow-hidden">
+                  <img src="${p.image}" class="w-full h-56 object-cover" />
+                  <div class="p-4">
+                    <h4 class="font-bold">${p.name}</h4>
+                    <button onclick="navigate('PRODUCT_DETAIL','${p.id}')" class="mt-3 w-full navy-bg text-white py-2 rounded-lg text-xs font-bold">عرض المنتج</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      else if (state.view === "AUTH") {
+        root.innerHTML = `
+          <div class="max-w-md mx-auto px-4 py-12 fade-in">
+            <div class="bg-slate-50 p-6 rounded-2xl border space-y-6">
+              <h2 class="text-xl font-extrabold text-center">تسجيل دخول الزبائن</h2>
+              <form onsubmit="handleAuth(event, 'LOGIN')" class="space-y-3">
+                <input id="login-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
+                <input id="login-pass" required type="password" placeholder="كلمة المرور" class="w-full border rounded-xl p-3 text-sm" />
+                <button type="submit" class="w-full navy-bg text-white py-3 rounded-xl font-bold text-sm">دخول</button>
+              </form>
+              <form onsubmit="handleAuth(event, 'REGISTER')" class="space-y-3 border-t pt-4">
+                <h3 class="text-sm font-bold text-center">إنشاء حساب جديد</h3>
+                <input id="reg-name" required placeholder="الاسم" class="w-full border rounded-xl p-3 text-sm" />
+                <input id="reg-phone" required placeholder="الهاتف" class="w-full border rounded-xl p-3 text-sm" />
+                <input id="reg-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
+                <input id="reg-pass" required type="password" placeholder="كلمة المرور" class="w-full border rounded-xl p-3 text-sm" />
+                <button type="submit" class="w-full border-2 border-[#0A192F] py-3 rounded-xl font-bold text-sm">تسجيل</button>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      lucide.createIcons();
+    }
+
+    render();
+  </script>
+</body>
+</html>

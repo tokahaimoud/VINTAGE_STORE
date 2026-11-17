@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VINTAGE_STORE | لوحة تحكم الإدارة</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; color: #0A192F; }
+    .navy-bg { background-color: #0A192F; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+  <div id="admin-root"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDJt6U24C8-rDO2bfzB-7j94f5nfiley6c",
+      authDomain: "vintage-store-c15cc.firebaseapp.com",
+      databaseURL: "https://vintage-store-c15cc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "vintage-store-c15cc",
+      storageBucket: "vintage-store-c15cc.firebasestorage.app",
+      messagingSenderId: "606228990844",
+      appId: "1:606228990844:web:796fa856cde24e5c2932f9",
+      measurementId: "G-TBFQSHFXS0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const dbRef = ref(getDatabase(app), "vintage_store_db");
+
+    const defaultDB = {
+      settings: { storeName: "VINTAGE_STORE", logoUrl: "", storeUrl: "" },
+      users: [{ id: "u1", name: "أحمد الزبون", email: "user@vintage.com", password: "123", phone: "0501112233", role: "CUSTOMER" }],
+      coupons: [{ id: "c1", code: "VINTAGE20", discountPct: 20, active: true }],
+      products: [
+        {
+          id: "p1",
+          name: "معطف صوف كحلي كلاسيكي",
+          description: "معطف فاخر مصنوع من الصوف الطبيعي بقصة عصرية أنيقة.",
+          price: 185,
+          category: "Men",
+          isFeatured: true,
+          image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80",
+          variants: [
+            { id: "v1", color: "كحلي", colorHex: "#0A192F", size: "M", stock: 10 },
+            { id: "v2", color: "كحلي", colorHex: "#0A192F", size: "L", stock: 7 }
+          ]
+        }
+      ],
+      orders: []
+    };
+
+    let currentDB = JSON.parse(JSON.stringify(defaultDB));
+    let prevOrdersCount = null;
+
+    function normalizeDB(data) {
+      return {
+        settings: data?.settings || defaultDB.settings,
+        users: data?.users || [],
+        coupons: data?.coupons || [],
+        products: data?.products || [],
+        orders: data?.orders || []
+      };
+    }
+
+    function saveDB(newDB) {
+      currentDB = normalizeDB(newDB);
+      set(dbRef, currentDB);
+    }
+
+    onValue(dbRef, (snapshot) => {
+      const val = snapshot.val();
+      if (!val) {
+        saveDB(defaultDB);
+      } else {
+        currentDB = normalizeDB(val);
+        if (prevOrdersCount !== null && currentDB.orders.length > prevOrdersCount) {
+          showToast("🔔 وصل طلب جديد من أحد الزبائن الآن!");
+        }
+        prevOrdersCount = currentDB.orders.length;
+        render();
+      }
+    });
+
+    let state = {
+      isAuthenticated: sessionStorage.getItem("admin_logged_in") === "true",
+      tab: "PRODUCTS",
+      editingProductId: null
+    };
+
+    window.showToast = function(msg, isError = false) {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      el.className = `px-6 py-3 rounded-xl shadow-xl text-sm font-bold fade-in ${isError ? "bg-red-600 text-white" : "navy-bg text-white border border-white/20"}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    };
+
+    window.loginAdmin = function(e) {
+      e.preventDefault();
+      const email = document.getElementById("adm-email").value.trim();
+      const pass = document.getElementById("adm-pass").value.trim();
+      if (email === "admin@vintage.com" && pass === "admin123") {
+        state.isAuthenticated = true;
+        sessionStorage.setItem("admin_logged_in", "true");
+        render();
+      } else {
+        showToast("بيانات المدير غير صحيحة!", true);
+      }
+    };
+
+    window.logoutAdmin = function() {
+      state.isAuthenticated = false;
+      sessionStorage.removeItem("admin_logged_in");
+      render();
+    };
+
+    window.switchTab = function(tabId) {
+      state.tab = tabId;
+      render();
+    };
+
+    window.handleSaveProduct = function(e) {
+      e.preventDefault();
+      const name = document.getElementById("p-name").value.trim();
+      const description = document.getElementById("p-desc").value.trim();
+      const price = parseFloat(document.getElementById("p-price").value);
+      const category = document.getElementById("p-cat").value;
+      const image = document.getElementById("p-img").value.trim() || "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80";
+      const isFeatured = document.getElementById("p-feat").checked;
+      const color = document.getElementById("p-color").value.trim();
+      const sizes = document.getElementById("p-sizes").value.split(",").map(s => s.trim()).filter(Boolean);
+      const stock = parseInt(document.getElementById("p-stock").value);
+
+      const variants = sizes.map((sz, idx) => ({
+        id: "v_" + Date.now() + "_" + idx,
+        color,
+        colorHex: "#0A192F",
+        size: sz,
+        stock
+      }));
+
+      if (state.editingProductId) {
+        const index = currentDB.products.findIndex(p => p.id === state.editingProductId);
+        if (index > -1) {
+          currentDB.products[index] = {
+            ...currentDB.products[index],
+            name, description, price, category, image, isFeatured, variants
+          };
+        }
+        state.editingProductId = null;
+        showToast("تم تعديل المنتج وتحديثه سحابياً للزبائن ✅");
+      } else {
+        currentDB.products.unshift({
+          id: "p_" + Date.now(),
+          name, description, price, category, image, isFeatured, variants
+        });
+        showToast("تم نشر المنتج سحابياً لجميع الزبائن ✅");
+      }
+
+      saveDB(currentDB);
+    };
+
+    window.startEditProduct = function(id) {
+      state.editingProductId = id;
+      render();
+    };
+
+    window.cancelEditProduct = function() {
+      state.editingProductId = null;
+      render();
+    };
+
+    window.deleteProduct = function(id) {
+      currentDB.products = currentDB.products.filter(p => p.id !== id);
+      saveDB(currentDB);
+      showToast("تم حذف المنتج وإزالته فوراً 🗑️");
+    };
+
+    window.updateOrderStatus = function(orderId, newStatus) {
+      const ord = currentDB.orders.find(o => o.id === orderId);
+      if (ord) {
+        ord.status = newStatus;
+        saveDB(currentDB);
+        showToast(`تم تحديث حالة الطلب إلى ${newStatus}`);
+      }
+    };
+
+    window.addCoupon = function(e) {
+      e.preventDefault();
+      const code = document.getElementById("nc-code").value.trim().toUpperCase();
+      const pct = Number(document.getElementById("nc-pct").value);
+      currentDB.coupons.push({ id: "c" + Date.now(), code, discountPct: pct, active: true });
+      saveDB(currentDB);
+      showToast("تمت إضافة الكوبون سحابياً");
+    };
+
+    window.saveSettings = function(e) {
+      e.preventDefault();
+      currentDB.settings.storeName = document.getElementById("st-name").value.trim();
+      currentDB.settings.logoUrl = document.getElementById("st-logo").value.trim();
+      currentDB.settings.storeUrl = document.getElementById("st-url").value.trim();
+      saveDB(currentDB);
+      generateStoreQR();
+      showToast("تم حفظ الإعدادات وتحديث الـ QR!");
+    };
+
+    window.generateStoreQR = function() {
+      const container = document.getElementById("qrcode-container");
+      if (!container) return;
+      container.innerHTML = "";
+      const inputEl = document.getElementById("st-url");
+      const url = (inputEl ? inputEl.value.trim() : "") || currentDB.settings.storeUrl || window.location.href.replace("admin.html", "index.html");
+      new QRCode(container, {
+        text: url,
+        width: 190,
+        height: 190,
+        colorDark: "#0A192F",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    };
+
+    window.downloadQR = function() {
+      const canvas = document.querySelector("#qrcode-container canvas");
+      if (!canvas) return showToast("يرجى توليد الرمز أولاً", true);
+      const link = document.createElement("a");
+      link.download = "store-qr-code.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      showToast("تم تحميل صورة الـ QR بنجاح ✅");
+    };
+
+    function render() {
+      const root = document.getElementById("admin-root");
+
+      if (!state.isAuthenticated) {
+        root.innerHTML = `
+          <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border space-y-6">
+              <div class="text-center">
+                <div class="w-14 h-14 navy-bg text-white rounded-2xl flex items-center justify-center mx-auto font-extrabold text-2xl mb-3">A</div>
+                <h1 class="text-2xl font-extrabold">تسجيل دخول الإدارة</h1>
+                <p class="text-xs text-slate-500 mt-1">admin@vintage.com | admin123</p>
+              </div>
+              <form onsubmit="loginAdmin(event)" class="space-y-4">
+                <input id="adm-email" type="email" required value="admin@vintage.com" class="w-full border rounded-xl p-3.5 text-sm" />
+                <input id="adm-pass" type="password" required value="admin123" class="w-full border rounded-xl p-3.5 text-sm" />
+                <button type="submit" class="w-full navy-bg text-white py-3.5 rounded-xl font-extrabold">دخول للوحة التحكم</button>
+              </form>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const db = currentDB;
+      const newOrdersCount = db.orders.filter(o => o.status === "NEW").length;
+      const totalSales = db.orders.reduce((s, o) => s + o.totalAmount, 0);
+      const editProd = state.editingProductId ? db.products.find(p => p.id === state.editingProductId) : null;
+
+      root.innerHTML = `
+        <header class="navy-bg text-white px-6 py-4 shadow-md flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center gap-3">
+            <span class="bg-white text-[#0A192F] font-extrabold px-3 py-1 rounded-lg text-sm">ADMIN PANEL</span>
+            <span class="font-extrabold text-lg tracking-wider">${db.settings.storeName}</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold">
+              ● متصل بسحابة Firebase لحظياً
+            </span>
+            <button onclick="logoutAdmin()" class="text-xs text-slate-300 hover:text-white">خروج</button>
+          </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div class="flex flex-wrap gap-2 mb-8">
+            ${[
+              { id: "OVERVIEW", label: "الإحصائيات" },
+              { id: "PRODUCTS", label: `إدارة المنتجات (${db.products.length})` },
+              { id: "ORDERS", label: `الطلبات الواردة (${db.orders.length}) ${newOrdersCount > 0 ? "🔴 " + newOrdersCount : ""}` },
+              { id: "CUSTOMERS", label: `الزبائن (${db.users.length})` },
+              { id: "COUPONS", label: "الكوبونات" },
+              { id: "SETTINGS", label: "هوية المتجر و QR" }
+            ].map(t => `
+              <button onclick="switchTab('${t.id}')"
+                class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition ${state.tab === t.id ? "navy-bg text-white shadow" : "bg-white border text-[#0A192F] hover:bg-slate-100"}">
+                ${t.label}
+              </button>
+            `).join("")}
+          </div>
+
+          ${state.tab === "OVERVIEW" ? `
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+              <div class="navy-bg text-white p-6 rounded-3xl">
+                <span class="text-xs text-slate-300">إجمالي المبيعات</span>
+                <p class="text-3xl font-extrabold mt-2">$${totalSales.toFixed(2)}</p>
+              </div>
+              <div class="bg-white border p-6 rounded-3xl">
+                <span class="text-xs text-slate-500">عدد الطلبات</span>
+                <p class="text-3xl font-extrabold mt-2">${db.orders.length}</p>
+              </div>
+              <div class="bg-white border p-6 rounded-3xl">
+                <span class="text-xs text-emerald-600 font-bold">طلبات جديدة</span>
+                <p class="text-3xl font-extrabold mt-2 text-emerald-600">${newOrdersCount}</p>
+              </div>
+              <div class="bg-white border p-6 rounded-3xl">
+                <span class="text-xs text-slate-500">عدد المنتجات</span>
+                <p class="text-3xl font-extrabold mt-2">${db.products.length}</p>
+              </div>
+            </div>
+          ` : ""}
+
+          ${state.tab === "PRODUCTS" ? `
+            <div class="grid lg:grid-cols-3 gap-8">
+              <form onsubmit="handleSaveProduct(event)" class="bg-white p-6 rounded-3xl border shadow-sm space-y-4 h-fit">
+                <div class="flex justify-between items-center">
+                  <h3 class="font-extrabold text-lg">${editProd ? "تعديل المنتج" : "إضافة منتج جديد"}</h3>
+                  ${editProd ? `<button type="button" onclick="cancelEditProduct()" class="text-xs text-red-600 font-bold">إلغاء التعديل</button>` : ""}
+                </div>
+                <input id="p-name" required value="${editProd?.name || ""}" placeholder="اسم المنتج" class="w-full border rounded-xl p-3 text-sm" />
+                <textarea id="p-desc" required rows="2" placeholder="وصف المنتج" class="w-full border rounded-xl p-3 text-sm">${editProd?.description || ""}</textarea>
+                <div class="grid grid-cols-2 gap-3">
+                  <input id="p-price" required type="number" step="0.01" value="${editProd?.price || ""}" placeholder="السعر ($)" class="border rounded-xl p-3 text-sm" />
+                  <select id="p-cat" class="border rounded-xl p-3 text-sm bg-white font-bold">
+                    ${["Men", "Women", "Kids", "Accessories", "New Arrivals", "Best Sellers"].map(c => `
+                      <option value="${c}" ${editProd?.category === c ? "selected" : ""}>${c}</option>
+                    `).join("")}
+                  </select>
+                </div>
+                <input id="p-img" value="${editProd?.image || ""}" placeholder="رابط الصورة (URL)" class="w-full border rounded-xl p-3 text-sm" />
+                <div class="grid grid-cols-3 gap-2">
+                  <input id="p-color" required value="${editProd?.variants?.[0]?.color || "كحلي"}" placeholder="اللون" class="border rounded-xl p-3 text-sm" />
+                  <input id="p-sizes" required value="${editProd?.variants ? editProd.variants.map(v => v.size).join(", ") : "S, M, L"}" placeholder="المقاسات" class="border rounded-xl p-3 text-sm" />
+                  <input id="p-stock" required type="number" value="${editProd?.variants?.[0]?.stock || 10}" placeholder="المخزون" class="border rounded-xl p-3 text-sm" />
+                </div>
+                <label class="flex items-center gap-2 text-xs font-bold">
+                  <input id="p-feat" type="checkbox" ${editProd?.isFeatured ? "checked" : ""} /> تمييز المنتج (Featured)
+                </label>
+                <button type="submit" class="w-full navy-bg text-white py-3.5 rounded-xl font-extrabold text-sm">
+                  ${editProd ? "حفظ التعديلات وتحديث المتجر" : "نشر المنتج للزبائن"}
+                </button>
+              </form>
+
+              <div class="lg:col-span-2 space-y-3">
+                ${db.products.map(p => `
+                  <div class="bg-white border p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                      <img src="${p.image}" class="w-16 h-20 object-cover rounded-xl border" />
+                      <div>
+                        <h4 class="font-extrabold">${p.name}</h4>
+                        <p class="text-xs text-slate-500">${p.category} | $${p.price} | المخزون: ${(p.variants || []).reduce((a, b) => a + b.stock, 0)}</p>
+                        <p class="text-[11px] text-slate-400">المقاسات: ${(p.variants || []).map(v => `${v.size}(${v.stock})`).join(" - ")}</p>
+                      </div>
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="startEditProduct('${p.id}')" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl text-xs font-bold">تعديل</button>
+                      <button onclick="deleteProduct('${p.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-bold">حذف</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : ""}
+
+          ${state.tab === "ORDERS" ? `
+            <div class="bg-white border rounded-3xl overflow-x-auto">
+              <table class="w-full text-right text-sm">
+                <thead class="navy-bg text-white text-xs">
+                  <tr>
+                    <th class="p-4">رقم الطلب</th>
+                    <th class="p-4">الزبون والعنوان</th>
+                    <th class="p-4">المنتجات المطلوبة</th>
+                    <th class="p-4">الإجمالي</th>
+                    <th class="p-4">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  ${db.orders.length === 0 ? `<tr><td colspan="5" class="p-8 text-center text-slate-500">لا توجد طلبات واردة بعد</td></tr>` :
+                    db.orders.map(o => `
+                      <tr class="${o.status === "NEW" ? "bg-blue-50/50" : ""}">
+                        <td class="p-4 font-extrabold">${o.orderNumber}</td>
+                        <td class="p-4">
+                          <div class="font-bold">${o.customerName}</div>
+                          <div class="text-xs text-slate-500">${o.customerPhone} | ${o.shippingAddress}</div>
+                        </td>
+                        <td class="p-4 text-xs">
+                          ${(o.items || []).map(i => `<div>• ${i.name} (${i.color} / ${i.size}) × ${i.quantity}</div>`).join("")}
+                        </td>
+                        <td class="p-4 font-extrabold">$${o.totalAmount.toFixed(2)}</td>
+                        <td class="p-4">
+                          <select onchange="updateOrderStatus('${o.id}', this.value)" class="border rounded-xl px-3 py-1.5 text-xs font-bold">
+                            ${["NEW", "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"].map(st => `
+                              <option value="${st}" ${o.status === st ? "selected" : ""}>${st}</option>
+                            `).join("")}
+                          </select>
+                        </td>
+                      </tr>
+                    `).join("")
+                  }
+                </tbody>
+              </table>
+            </div>
+          ` : ""}
+
+          ${state.tab === "CUSTOMERS" ? `
+            <div class="grid sm:grid-cols-3 gap-4">
+              ${db.users.map(u => `
+                <div class="bg-white border p-5 rounded-2xl">
+                  <h4 class="font-bold">${u.name}</h4>
+                  <p class="text-xs text-slate-500">${u.email} | ${u.phone}</p>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+
+          ${state.tab === "COUPONS" ? `
+            <div class="max-w-md space-y-4">
+              <form onsubmit="addCoupon(event)" class="flex gap-2">
+                <input id="nc-code" required placeholder="الكود" class="flex-1 border rounded-xl p-3 text-sm uppercase" />
+                <input id="nc-pct" required type="number" placeholder="%" class="w-24 border rounded-xl p-3 text-sm" />
+                <button type="submit" class="navy-bg text-white px-5 rounded-xl font-bold text-sm">إضافة</button>
+              </form>
+              ${db.coupons.map(c => `<div class="bg-white border p-3 rounded-xl flex justify-between font-bold text-sm"><span>${c.code}</span><span class="text-emerald-600">${c.discountPct}%</span></div>`).join("")}
+            </div>
+          ` : ""}
+
+          ${state.tab === "SETTINGS" ? `
+            <div class="grid md:grid-cols-2 gap-8">
+              <form onsubmit="saveSettings(event)" class="bg-white border p-6 rounded-3xl space-y-4 h-fit">
+                <h3 class="font-extrabold text-lg">إعدادات المتجر والرابط</h3>
+                <div>
+                  <label class="text-xs font-bold block mb-1">اسم المتجر</label>
+                  <input id="st-name" required value="${db.settings.storeName}" class="w-full border rounded-xl p-3 text-sm font-bold" />
+                </div>
+                <div>
+                  <label class="text-xs font-bold block mb-1">رابط الشعار (URL)</label>
+                  <input id="st-logo" value="${db.settings.logoUrl || ""}" placeholder="https://..." class="w-full border rounded-xl p-3 text-sm" />
+                </div>
+                <div>
+                  <label class="text-xs font-bold block mb-1">رابط متجر الزبائن (لإنشاء الـ QR)</label>
+                  <input id="st-url" value="${db.settings.storeUrl || ""}" placeholder="مثال: https://your-store.netlify.app" class="w-full border rounded-xl p-3 text-sm text-left" dir="ltr" />
+                </div>
+                <button type="submit" class="w-full navy-bg text-white px-6 py-3.5 rounded-xl font-bold text-sm">حفظ وتحديث الرمز</button>
+              </form>
+
+              <div class="bg-white border p-6 rounded-3xl flex flex-col items-center text-center space-y-4">
+                <h3 class="font-extrabold text-lg">رمز QR لتسوق الزبائن</h3>
+                <p class="text-xs text-slate-500">امسح الرمز بكاميرا الهاتف أو اطبعه ليدخل الزبائن للمتجر مباشرة</p>
+                <div id="qrcode-container" class="p-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl flex items-center justify-center min-h-[220px] min-w-[220px]"></div>
+                <button onclick="downloadQR()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
+                  <span>تحميل صورة QR للطباعة</span>
+                </button>
+              </div>
+            </div>
+          ` : ""}
+        </div>
+      `;
+      lucide.createIcons();
+      if (state.tab === "SETTINGS") {
+        setTimeout(generateStoreQR, 50);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
