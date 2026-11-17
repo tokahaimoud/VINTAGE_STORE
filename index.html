@@ -2,30 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>VINTAGE_STORE | متجر الزبائن</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: 'Cairo', sans-serif; background-color: #ffffff; color: #0A192F; }
+    /* إصلاح جذري لعرض الشاشة والتمرير على الموبايل */
+    html, body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #ffffff;
+      color: #0A192F;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden !important;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    *, *:before, *:after { box-sizing: inherit; }
     .navy-bg { background-color: #0A192F; }
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* جعل شريط الفئات قابلاً للتمرير بالسحب على الموبايل */
+    .categories-bar::-webkit-scrollbar { display: none; }
+    .categories-bar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="antialiased">
 
-  <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+  <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 max-w-[90vw]"></div>
 
-  <header class="sticky top-0 z-40 navy-bg text-white shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-      <div onclick="navigate('STORE')" class="flex items-center gap-3 cursor-pointer">
+  <header class="sticky top-0 z-40 navy-bg text-white shadow-lg w-full">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-20 flex items-center justify-between">
+      <div onclick="navigate('STORE')" class="flex items-center gap-2 cursor-pointer">
         <img id="nav-logo" src="" class="hidden w-10 h-10 rounded-full object-cover border border-white/30" />
         <div id="nav-logo-placeholder" class="w-10 h-10 rounded-full bg-white text-[#0A192F] flex items-center justify-center font-extrabold text-xl">V</div>
-        <span id="nav-store-name" class="text-xl sm:text-2xl font-extrabold tracking-widest uppercase">VINTAGE_STORE</span>
+        <span id="nav-store-name" class="text-base sm:text-2xl font-extrabold tracking-widest uppercase truncate max-w-[120px] sm:max-w-none">VINTAGE_STORE</span>
       </div>
 
+      <!-- قائمة الفئات المتجاوبة -->
       <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
         <button onclick="filterCategory('ALL')" class="hover:text-white">الكل</button>
         <button onclick="filterCategory('Men')" class="hover:text-white">Men</button>
@@ -36,26 +53,37 @@
         <button onclick="filterCategory('Best Sellers')" class="hover:text-white">Best Sellers</button>
       </nav>
 
-      <div class="flex items-center gap-3">
-        <button onclick="navigate('WISHLIST')" class="relative p-2.5 hover:bg-white/10 rounded-full">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="navigate('WISHLIST')" class="relative p-2 hover:bg-white/10 rounded-full">
           <i data-lucide="heart" class="w-5 h-5"></i>
-          <span id="wishlist-badge" class="hidden absolute top-1 right-1 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <span id="wishlist-badge" class="hidden absolute top-0 right-0 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
 
-        <button onclick="navigate('CART')" class="relative p-2.5 hover:bg-white/10 rounded-full">
+        <button onclick="navigate('CART')" class="relative p-2 hover:bg-white/10 rounded-full">
           <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-          <span id="cart-badge" class="hidden absolute top-1 right-1 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <span id="cart-badge" class="hidden absolute top-0 right-0 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
 
-        <button onclick="navigate('MY_ORDERS')" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg font-bold">طلباتي</button>
+        <button onclick="navigate('MY_ORDERS')" class="text-xs bg-white/15 hover:bg-white/20 px-2.5 sm:px-3 py-2 rounded-lg font-bold whitespace-nowrap">طلباتي</button>
         <div id="auth-area"></div>
       </div>
     </div>
+    
+    <!-- شريط فئات إضافي يظهر بملء العرض على الموبايل -->
+    <div class="lg:hidden flex items-center gap-3 overflow-x-auto categories-bar px-4 py-2 bg-[#06101f] text-xs text-slate-300 whitespace-nowrap border-t border-white/10">
+      <button onclick="filterCategory('ALL')" class="hover:text-white font-bold">الكل</button>
+      <button onclick="filterCategory('Men')" class="hover:text-white font-bold">Men</button>
+      <button onclick="filterCategory('Women')" class="hover:text-white font-bold">Women</button>
+      <button onclick="filterCategory('Kids')" class="hover:text-white font-bold">Kids</button>
+      <button onclick="filterCategory('Accessories')" class="hover:text-white font-bold">Accessories</button>
+      <button onclick="filterCategory('New Arrivals')" class="hover:text-white font-bold">New Arrivals</button>
+      <button onclick="filterCategory('Best Sellers')" class="hover:text-white font-bold">Best Sellers</button>
+    </div>
   </header>
 
-  <main id="app-root" class="min-h-[80vh]"></main>
+  <main id="app-root" class="min-h-[80vh] w-full overflow-x-hidden"></main>
 
-  <footer class="navy-bg text-slate-300 py-10 px-6 mt-20 text-center text-sm">
+  <footer class="navy-bg text-slate-300 py-10 px-6 mt-20 text-center text-sm w-full">
     <p id="footer-store-name" class="text-white font-extrabold text-lg mb-2">VINTAGE_STORE</p>
     <p class="text-slate-400">الدفع عند الاستلام (Cash on Delivery) متاح لجميع الطلبات</p>
   </footer>
@@ -355,8 +383,8 @@
       wb.classList.toggle("hidden", state.wishlist.length === 0);
 
       document.getElementById("auth-area").innerHTML = state.currentUser
-        ? `<button onclick="logoutCustomer()" class="text-xs bg-white text-[#0A192F] px-3 py-2 rounded-lg font-bold">خروج (${state.currentUser.name})</button>`
-        : `<button onclick="navigate('AUTH')" class="text-xs bg-white text-[#0A192F] px-4 py-2 rounded-lg font-bold">دخول</button>`;
+        ? `<button onclick="logoutCustomer()" class="text-xs bg-white text-[#0A192F] px-2.5 py-2 rounded-lg font-bold truncate max-w-[80px]">خروج</button>`
+        : `<button onclick="navigate('AUTH')" class="text-xs bg-white text-[#0A192F] px-3 py-2 rounded-lg font-bold">دخول</button>`;
 
       const root = document.getElementById("app-root");
 
@@ -370,22 +398,22 @@
         });
 
         root.innerHTML = `
-          <section class="navy-bg text-white py-16 px-6">
-            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
-              <div class="space-y-5">
-                <span class="text-xs tracking-widest uppercase border border-white/30 px-3 py-1 rounded-full">COLLECTION 2026</span>
-                <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">أناقة خالدة بتصميم عصري فاخر</h1>
-                <p class="text-slate-300">استخدم كود <b class="text-white underline">VINTAGE20</b> للحصول على خصم 20% على طلبك.</p>
-                <a href="#catalog" class="inline-block bg-white text-[#0A192F] px-8 py-3.5 rounded-xl font-extrabold">تسوق الآن</a>
+          <section class="navy-bg text-white py-12 px-4 sm:px-6">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 items-center">
+              <div class="space-y-4 text-center lg:text-right">
+                <span class="inline-block text-xs tracking-widest uppercase border border-white/30 px-3 py-1 rounded-full">COLLECTION 2026</span>
+                <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">أناقة خالدة بتصميم عصري فاخر</h1>
+                <p class="text-slate-300 text-sm sm:text-base">استخدم كود <b class="text-white underline">VINTAGE20</b> للحصول على خصم 20% على طلبك.</p>
+                <a href="#catalog" class="inline-block bg-white text-[#0A192F] px-8 py-3 rounded-xl font-extrabold text-sm">تسوق الآن</a>
               </div>
               <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80" class="hidden lg:block rounded-3xl h-80 w-full object-cover" />
             </div>
           </section>
 
-          <section id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-            <div class="bg-slate-50 p-4 rounded-2xl border mb-8 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
-              <input type="text" placeholder="ابحث عن منتج..." value="${state.filters.search}" oninput="updateSearch(this.value)" class="sm:col-span-2 border rounded-xl px-4 py-2.5 text-sm" />
-              <select onchange="updateSize(this.value)" class="border rounded-xl px-3 py-2.5 text-sm bg-white font-bold">
+          <section id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div class="bg-slate-50 p-4 rounded-2xl border mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <input type="text" placeholder="ابحث عن منتج..." value="${state.filters.search}" oninput="updateSearch(this.value)" class="border rounded-xl px-4 py-2.5 text-sm w-full" />
+              <select onchange="updateSize(this.value)" class="border rounded-xl px-3 py-2.5 text-sm bg-white font-bold w-full">
                 <option value="ALL">جميع المقاسات</option>
                 <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
               </select>
@@ -396,27 +424,27 @@
             </div>
 
             ${filtered.length === 0 ? `<p class="text-center py-16 text-slate-500 font-bold">لا توجد منتجات حالياً</p>` : `
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 ${filtered.map(p => {
                   const stock = (p.variants || []).reduce((s, v) => s + v.stock, 0);
                   const wished = state.wishlist.includes(p.id);
                   return `
-                    <div class="bg-white rounded-2xl border overflow-hidden hover:shadow-xl transition flex flex-col">
+                    <div class="bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
                       <div onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="relative aspect-[3/4] bg-slate-100 cursor-pointer overflow-hidden">
                         <img src="${p.image}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
-                        ${p.isFeatured ? `<span class="absolute top-3 right-3 navy-bg text-white text-[10px] px-3 py-1 rounded-full font-bold">Featured</span>` : ""}
-                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="absolute top-3 left-3 bg-white p-2 rounded-full shadow">
+                        ${p.isFeatured ? `<span class="absolute top-2 right-2 navy-bg text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Featured</span>` : ""}
+                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow">
                           <i data-lucide="heart" class="w-4 h-4 ${wished ? "fill-red-500 text-red-500" : ""}"></i>
                         </button>
                       </div>
-                      <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                      <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
                         <div>
-                          <span class="text-xs text-slate-500 font-bold">${p.category} | المتوفر: ${stock}</span>
-                          <h3 onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="font-extrabold text-lg cursor-pointer hover:underline">${p.name}</h3>
+                          <span class="text-[10px] text-slate-500 font-bold">${p.category} | المتوفر: ${stock}</span>
+                          <h3 onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="font-extrabold text-sm sm:text-base cursor-pointer hover:underline line-clamp-1">${p.name}</h3>
                         </div>
-                        <div class="flex justify-between items-center pt-3 border-t">
-                          <span class="text-2xl font-extrabold">$${p.price}</span>
-                          <button onclick="addToCart('${p.id}', '${p.variants?.[0]?.id}', 1)" ${stock === 0 ? "disabled" : ""} class="navy-bg text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40">+ للسلة</button>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                          <span class="text-base sm:text-xl font-extrabold">$${p.price}</span>
+                          <button onclick="addToCart('${p.id}', '${p.variants?.[0]?.id}', 1)" ${stock === 0 ? "disabled" : ""} class="navy-bg text-white px-3 py-1.5 rounded-xl text-xs font-bold disabled:opacity-40">+ للسلة</button>
                         </div>
                       </div>
                     </div>
@@ -433,30 +461,30 @@
         if (!p) return navigate("STORE");
         const v = (p.variants || []).find(x => x.id === state.selectedVariantId) || p.variants?.[0];
         root.innerHTML = `
-          <div class="max-w-5xl mx-auto px-4 py-12 fade-in">
-            <button onclick="navigate('STORE')" class="mb-6 text-sm font-bold text-slate-600">← العودة للمتجر</button>
-            <div class="grid md:grid-cols-2 gap-10 bg-white p-6 rounded-3xl border">
-              <img src="${p.image}" class="w-full h-[450px] object-cover rounded-2xl" />
-              <div class="space-y-5 flex flex-col justify-center">
+          <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
+            <button onclick="navigate('STORE')" class="mb-4 text-xs sm:text-sm font-bold text-slate-600">← العودة للمتجر</button>
+            <div class="grid md:grid-cols-2 gap-6 bg-white p-4 sm:p-6 rounded-3xl border">
+              <img src="${p.image}" class="w-full h-[300px] sm:h-[400px] object-cover rounded-2xl" />
+              <div class="space-y-4 flex flex-col justify-center">
                 <span class="text-xs font-bold text-slate-500">${p.category}</span>
-                <h1 class="text-3xl font-extrabold">${p.name}</h1>
-                <p class="text-2xl font-extrabold">$${p.price}</p>
-                <p class="text-sm text-slate-600">${p.description}</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold">${p.name}</h1>
+                <p class="text-xl sm:text-2xl font-extrabold">$${p.price}</p>
+                <p class="text-xs sm:text-sm text-slate-600">${p.description}</p>
                 <div>
                   <span class="text-xs font-bold block mb-2">اختر اللون والمقاس:</span>
                   <div class="flex flex-wrap gap-2">
                     ${(p.variants || []).map(vr => `
                       <button onclick="selectVariant('${vr.id}')" ${vr.stock === 0 ? "disabled" : ""}
-                        class="px-4 py-2 rounded-xl border text-xs font-bold ${vr.stock === 0 ? "opacity-40" : v?.id === vr.id ? "navy-bg text-white" : ""}">
+                        class="px-3 py-1.5 rounded-xl border text-xs font-bold ${vr.stock === 0 ? "opacity-40" : v?.id === vr.id ? "navy-bg text-white" : ""}">
                         ${vr.color} - ${vr.size} (${vr.stock})
                       </button>
                     `).join("")}
                   </div>
                 </div>
-                <div class="flex gap-3 pt-4">
-                  <input type="number" min="1" max="${v?.stock || 1}" value="${state.qty}" onchange="updateQty(this.value)" class="w-20 border rounded-xl text-center font-bold" />
-                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, false)" class="flex-1 navy-bg text-white py-3.5 rounded-xl font-bold">Add to Cart</button>
-                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, true)" class="flex-1 border-2 border-[#0A192F] py-3.5 rounded-xl font-bold">Buy Now</button>
+                <div class="flex gap-2 pt-2">
+                  <input type="number" min="1" max="${v?.stock || 1}" value="${state.qty}" onchange="updateQty(this.value)" class="w-16 border rounded-xl text-center font-bold text-sm" />
+                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, false)" class="flex-1 navy-bg text-white py-3 rounded-xl text-xs sm:text-sm font-bold">Add to Cart</button>
+                  <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, true)" class="flex-1 border-2 border-[#0A192F] py-3 rounded-xl text-xs sm:text-sm font-bold">Buy Now</button>
                 </div>
               </div>
             </div>
@@ -468,33 +496,33 @@
         const sub = state.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
         const disc = state.appliedCoupon ? (sub * state.appliedCoupon.discountPct) / 100 : 0;
         root.innerHTML = `
-          <div class="max-w-3xl mx-auto px-4 py-12 fade-in">
-            <h2 class="text-2xl font-extrabold mb-6">سلة المشتريات</h2>
-            ${state.cart.length === 0 ? `<p class="text-center py-12 bg-slate-50 rounded-2xl">السلة فارغة</p>` : `
+          <div class="max-w-2xl mx-auto px-4 py-8 fade-in">
+            <h2 class="text-xl sm:text-2xl font-extrabold mb-6">سلة المشتريات</h2>
+            ${state.cart.length === 0 ? `<p class="text-center py-12 bg-slate-50 rounded-2xl text-sm">السلة فارغة</p>` : `
               <div class="space-y-3 mb-6">
                 ${state.cart.map(i => `
-                  <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
+                  <div class="flex justify-between items-center bg-slate-50 p-3 sm:p-4 rounded-xl border gap-2">
                     <div>
-                      <h4 class="font-bold">${i.name}</h4>
-                      <p class="text-xs text-slate-500">${i.color} | ${i.size} | الكمية: ${i.quantity}</p>
+                      <h4 class="font-bold text-sm sm:text-base">${i.name}</h4>
+                      <p class="text-[11px] text-slate-500">${i.color} | ${i.size} | الكمية: ${i.quantity}</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                      <span class="font-bold">$${(i.price * i.quantity).toFixed(2)}</span>
+                    <div class="flex items-center gap-3">
+                      <span class="font-bold text-sm sm:text-base">$${(i.price * i.quantity).toFixed(2)}</span>
                       <button onclick="removeFromCart('${i.variantId}')" class="text-red-600 text-xs font-bold">حذف</button>
                     </div>
                   </div>
                 `).join("")}
               </div>
               <div class="flex gap-2 mb-6">
-                <input id="cp-in" placeholder="كود الخصم (VINTAGE20)" class="flex-1 border rounded-xl px-4 py-2.5 text-sm uppercase" />
-                <button onclick="applyCouponCode()" class="bg-slate-800 text-white px-5 rounded-xl text-sm font-bold">تطبيق</button>
+                <input id="cp-in" placeholder="كود الخصم (VINTAGE20)" class="flex-1 border rounded-xl px-3 py-2.5 text-xs sm:text-sm uppercase" />
+                <button onclick="applyCouponCode()" class="bg-slate-800 text-white px-4 rounded-xl text-xs sm:text-sm font-bold">تطبيق</button>
               </div>
-              <div class="navy-bg text-white p-6 rounded-2xl flex justify-between items-center">
+              <div class="navy-bg text-white p-5 rounded-2xl flex justify-between items-center">
                 <div>
-                  <p class="text-xs text-slate-300">الإجمالي بعد الخصم:</p>
-                  <p class="text-2xl font-extrabold">$${(sub - disc).toFixed(2)}</p>
+                  <p class="text-[11px] text-slate-300">الإجمالي بعد الخصم:</p>
+                  <p class="text-xl sm:text-2xl font-extrabold">$${(sub - disc).toFixed(2)}</p>
                 </div>
-                <button onclick="navigate('CHECKOUT')" class="bg-white text-[#0A192F] px-6 py-3 rounded-xl font-extrabold text-sm">إتمام الطلب</button>
+                <button onclick="navigate('CHECKOUT')" class="bg-white text-[#0A192F] px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm">إتمام الطلب</button>
               </div>
             `}
           </div>
@@ -503,14 +531,14 @@
 
       else if (state.view === "CHECKOUT") {
         root.innerHTML = `
-          <div class="max-w-lg mx-auto px-4 py-12 fade-in">
-            <h2 class="text-2xl font-extrabold mb-6">إتمام الطلب (الدفع عند الاستلام)</h2>
-            <form onsubmit="placeOrder(event)" class="bg-slate-50 p-6 rounded-2xl border space-y-4">
+          <div class="max-w-lg mx-auto px-4 py-8 fade-in">
+            <h2 class="text-xl sm:text-2xl font-extrabold mb-6">إتمام الطلب (الدفع عند الاستلام)</h2>
+            <form onsubmit="placeOrder(event)" class="bg-slate-50 p-5 rounded-2xl border space-y-3">
               <input id="chk-name" required placeholder="الاسم الكامل" value="${state.currentUser?.name || ""}" class="w-full border rounded-xl p-3 text-sm" />
               <input id="chk-phone" required placeholder="رقم الهاتف" value="${state.currentUser?.phone || ""}" class="w-full border rounded-xl p-3 text-sm" />
               <input id="chk-email" required type="email" placeholder="البريد الإلكتروني" value="${state.currentUser?.email || ""}" class="w-full border rounded-xl p-3 text-sm" />
               <textarea id="chk-address" required placeholder="عنوان التوصيل بالتفصيل" class="w-full border rounded-xl p-3 text-sm"></textarea>
-              <button type="submit" class="w-full navy-bg text-white py-3.5 rounded-xl font-extrabold">تأكيد الطلب (Place Order)</button>
+              <button type="submit" class="w-full navy-bg text-white py-3 rounded-xl font-extrabold text-sm">تأكيد الطلب (Place Order)</button>
             </form>
           </div>
         `;
@@ -519,18 +547,20 @@
       else if (state.view === "MY_ORDERS") {
         const myOrders = db.orders.filter(o => state.myOrderNumbers.includes(o.orderNumber) || (state.currentUser && o.userId === state.currentUser.id));
         root.innerHTML = `
-          <div class="max-w-4xl mx-auto px-4 py-12 fade-in">
-            <h2 class="text-2xl font-extrabold mb-6">طلباتي وحالة التوصيل</h2>
-            ${myOrders.length === 0 ? `<p class="text-slate-500">لا توجد طلبات مسجلة لك بعد</p>` : `
-              <div class="space-y-4">
+          <div class="max-w-3xl mx-auto px-4 py-8 fade-in">
+            <h2 class="text-xl sm:text-2xl font-extrabold mb-6">طلباتي وحالة التوصيل</h2>
+            ${myOrders.length === 0 ? `<p class="text-slate-500 text-sm">لا توجد طلبات مسجلة لك بعد</p>` : `
+              <div class="space-y-3">
                 ${myOrders.map(o => `
-                  <div class="border p-5 rounded-2xl bg-slate-50 flex justify-between items-center">
+                  <div class="border p-4 rounded-2xl bg-slate-50 flex justify-between items-center gap-2">
                     <div>
-                      <span class="font-extrabold">${o.orderNumber}</span>
-                      <span class="navy-bg text-white text-xs px-3 py-0.5 rounded-full mr-2">${o.status}</span>
-                      <p class="text-xs text-slate-500 mt-1">${(o.items || []).map(i => `${i.name} (${i.size}) × ${i.quantity}`).join(" ، ")}</p>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-extrabold text-sm">${o.orderNumber}</span>
+                        <span class="navy-bg text-white text-[10px] px-2 py-0.5 rounded-full">${o.status}</span>
+                      </div>
+                      <p class="text-[11px] text-slate-500 mt-1">${(o.items || []).map(i => `${i.name} (${i.size}) × ${i.quantity}`).join(" ، ")}</p>
                     </div>
-                    <span class="font-extrabold text-lg">$${o.totalAmount.toFixed(2)}</span>
+                    <span class="font-extrabold text-base sm:text-lg whitespace-nowrap">$${o.totalAmount.toFixed(2)}</span>
                   </div>
                 `).join("")}
               </div>
@@ -542,15 +572,15 @@
       else if (state.view === "WISHLIST") {
         const list = db.products.filter(p => state.wishlist.includes(p.id));
         root.innerHTML = `
-          <div class="max-w-5xl mx-auto px-4 py-12 fade-in">
-            <h2 class="text-2xl font-extrabold mb-6">المفضلة (${list.length})</h2>
-            <div class="grid sm:grid-cols-3 gap-6">
+          <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
+            <h2 class="text-xl sm:text-2xl font-extrabold mb-6">المفضلة (${list.length})</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
               ${list.map(p => `
-                <div class="border rounded-2xl overflow-hidden">
-                  <img src="${p.image}" class="w-full h-56 object-cover" />
-                  <div class="p-4">
-                    <h4 class="font-bold">${p.name}</h4>
-                    <button onclick="navigate('PRODUCT_DETAIL','${p.id}')" class="mt-3 w-full navy-bg text-white py-2 rounded-lg text-xs font-bold">عرض المنتج</button>
+                <div class="border rounded-2xl overflow-hidden bg-white">
+                  <img src="${p.image}" class="w-full h-40 object-cover" />
+                  <div class="p-3">
+                    <h4 class="font-bold text-xs sm:text-sm line-clamp-1">${p.name}</h4>
+                    <button onclick="navigate('PRODUCT_DETAIL','${p.id}')" class="mt-2 w-full navy-bg text-white py-1.5 rounded-lg text-[11px] font-bold">عرض المنتج</button>
                   </div>
                 </div>
               `).join("")}
@@ -561,16 +591,16 @@
 
       else if (state.view === "AUTH") {
         root.innerHTML = `
-          <div class="max-w-md mx-auto px-4 py-12 fade-in">
-            <div class="bg-slate-50 p-6 rounded-2xl border space-y-6">
-              <h2 class="text-xl font-extrabold text-center">تسجيل دخول الزبائن</h2>
+          <div class="max-w-md mx-auto px-4 py-8 fade-in">
+            <div class="bg-slate-50 p-5 rounded-2xl border space-y-6">
+              <h2 class="text-lg font-extrabold text-center">تسجيل دخول الزبائن</h2>
               <form onsubmit="handleAuth(event, 'LOGIN')" class="space-y-3">
                 <input id="login-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
                 <input id="login-pass" required type="password" placeholder="كلمة المرور" class="w-full border rounded-xl p-3 text-sm" />
                 <button type="submit" class="w-full navy-bg text-white py-3 rounded-xl font-bold text-sm">دخول</button>
               </form>
               <form onsubmit="handleAuth(event, 'REGISTER')" class="space-y-3 border-t pt-4">
-                <h3 class="text-sm font-bold text-center">إنشاء حساب جديد</h3>
+                <h3 class="text-xs font-bold text-center">إنشاء حساب جديد</h3>
                 <input id="reg-name" required placeholder="الاسم" class="w-full border rounded-xl p-3 text-sm" />
                 <input id="reg-phone" required placeholder="الهاتف" class="w-full border rounded-xl p-3 text-sm" />
                 <input id="reg-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
