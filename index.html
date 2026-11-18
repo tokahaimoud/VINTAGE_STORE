@@ -1,14 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>VINTAGE_STORE | متجر الزبائن</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* إصلاح جذري لعرض الشاشة والتمرير على الموبايل */
     html, body {
       font-family: 'Cairo', sans-serif;
       background-color: #ffffff;
@@ -19,22 +19,196 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-text-size-adjust: 100%;
     }
+
     *, *:before, *:after { box-sizing: inherit; }
     .navy-bg { background-color: #0A192F; }
-    .fade-in { animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* جعل شريط الفئات قابلاً للتمرير بالسحب على الموبايل */
+    .fade-in { animation: fadeIn 0.6s ease-in-out forwards; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-screen {
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(47,72,101,.58), transparent 52%),
+        linear-gradient(135deg,#071321,#0A192F 55%,#172b43);
+    }
+
+    .welcome-orb {
+      background: radial-gradient(circle,rgba(218,199,164,.15),transparent 68%);
+      animation: orbPulse 4s ease-in-out infinite alternate;
+    }
+
+    .welcome-reveal {
+      animation: welcomeReveal 1s cubic-bezier(.2,.75,.25,1) both;
+    }
+
+    .welcome-delay-1 { animation-delay: .2s; }
+    .welcome-delay-2 { animation-delay: .55s; }
+    .welcome-delay-3 { animation-delay: .85s; }
+    .auth-card { box-shadow: 0 24px 80px rgba(10,25,47,.12); }
+
+    @keyframes welcomeReveal {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes orbPulse {
+      from { transform: scale(.94); opacity: .6; }
+      to { transform: scale(1.08); opacity: 1; }
+    }
+
     .categories-bar::-webkit-scrollbar { display: none; }
     .categories-bar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    img { max-width: 100%; }
+    button, a, input, select, textarea { touch-action: manipulation; }
+    #orders-button i { display: none; }
+    .auth-screen { min-height: 100svh; }
+
+    @media (max-width: 640px) {
+      #site-header .max-w-7xl {
+        height: 64px;
+        padding-inline: 10px;
+        gap: 8px;
+      }
+
+      #site-header .max-w-7xl > div:first-child {
+        min-width: 0;
+        flex: 1;
+        gap: 7px;
+      }
+
+      #nav-logo,
+      #nav-logo-placeholder {
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+      }
+
+      #nav-logo-placeholder { font-size: 16px; }
+
+      #nav-store-name {
+        max-width: clamp(82px, 27vw, 125px);
+        font-size: 12px;
+        letter-spacing: .06em;
+      }
+
+      #site-header .max-w-7xl > .header-actions {
+        flex: none;
+        gap: 4px;
+      }
+
+      #site-header button.p-2 {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        padding: 7px;
+      }
+
+      #orders-button {
+        min-height: 34px;
+        padding: 7px 8px;
+        font-size: 10px;
+      }
+
+      #auth-area button {
+        min-height: 34px;
+        padding: 7px 8px;
+        gap: 4px;
+        font-size: 10px;
+      }
+
+      #site-header .categories-bar {
+        gap: 16px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-size: 11px;
+      }
+
+      #app-root { min-height: 100svh; }
+
+      .welcome-screen {
+        min-height: 100svh;
+        padding: 28px 18px;
+      }
+
+      .auth-screen { padding: 28px 16px; }
+
+      #site-footer {
+        margin-top: 32px;
+        padding: 32px 18px;
+      }
+
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+    }
+
+    @media (max-width: 360px) {
+      #site-header .max-w-7xl {
+        padding-inline: 7px;
+        gap: 5px;
+      }
+
+      #nav-store-name {
+        max-width: 82px;
+        font-size: 11px;
+      }
+
+      #orders-button {
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+        padding: 7px;
+      }
+
+      #orders-button i {
+        display: block;
+        width: 17px;
+        height: 17px;
+      }
+
+      #orders-button span,
+      #auth-area button span {
+        display: none;
+      }
+
+      #auth-area button {
+        width: 34px;
+        height: 34px;
+        justify-content: center;
+        padding: 7px;
+      }
+    }
+
+    @media (max-height: 640px) and (max-width: 640px) {
+      .welcome-screen {
+        min-height: 100svh;
+        padding-block: 24px;
+      }
+
+      .auth-screen { padding-block: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .welcome-reveal,
+      .welcome-orb {
+        animation: none !important;
+      }
+    }
   </style>
 </head>
 <body class="antialiased">
 
   <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 max-w-[90vw]"></div>
 
-  <header class="sticky top-0 z-40 navy-bg text-white shadow-lg w-full">
+  <!-- شريط المتجر مخفي أثناء الترحيب وتسجيل الحساب -->
+  <header id="site-header" class="hidden sticky top-0 z-40 navy-bg text-white shadow-lg w-full">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 h-20 flex items-center justify-between">
       <div onclick="navigate('STORE')" class="flex items-center gap-2 cursor-pointer">
         <img id="nav-logo" src="" class="hidden w-10 h-10 rounded-full object-cover border border-white/30" />
@@ -42,7 +216,6 @@
         <span id="nav-store-name" class="text-base sm:text-2xl font-extrabold tracking-widest uppercase truncate max-w-[120px] sm:max-w-none">VINTAGE_STORE</span>
       </div>
 
-      <!-- قائمة الفئات المتجاوبة -->
       <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
         <button onclick="filterCategory('ALL')" class="hover:text-white">الكل</button>
         <button onclick="filterCategory('Men')" class="hover:text-white">Men</button>
@@ -53,23 +226,26 @@
         <button onclick="filterCategory('Best Sellers')" class="hover:text-white">Best Sellers</button>
       </nav>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="navigate('WISHLIST')" class="relative p-2 hover:bg-white/10 rounded-full">
+      <div class="header-actions flex items-center gap-2 sm:gap-3">
+        <button onclick="navigate('WISHLIST')" aria-label="المفضلة" title="المفضلة" class="relative p-2 hover:bg-white/10 rounded-full">
           <i data-lucide="heart" class="w-5 h-5"></i>
           <span id="wishlist-badge" class="hidden absolute top-0 right-0 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
 
-        <button onclick="navigate('CART')" class="relative p-2 hover:bg-white/10 rounded-full">
+        <button onclick="navigate('CART')" aria-label="السلة" title="السلة" class="relative p-2 hover:bg-white/10 rounded-full">
           <i data-lucide="shopping-bag" class="w-5 h-5"></i>
           <span id="cart-badge" class="hidden absolute top-0 right-0 bg-white text-[#0A192F] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
 
-        <button onclick="navigate('MY_ORDERS')" class="text-xs bg-white/15 hover:bg-white/20 px-2.5 sm:px-3 py-2 rounded-lg font-bold whitespace-nowrap">طلباتي</button>
+        <button id="orders-button" aria-label="طلباتي" title="طلباتي" onclick="navigate('MY_ORDERS')" class="text-xs bg-white/15 hover:bg-white/20 px-2.5 sm:px-3 py-2 rounded-lg font-bold whitespace-nowrap">
+          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+          <span>طلباتي</span>
+        </button>
+
         <div id="auth-area"></div>
       </div>
     </div>
-    
-    <!-- شريط فئات إضافي يظهر بملء العرض على الموبايل -->
+
     <div class="lg:hidden flex items-center gap-3 overflow-x-auto categories-bar px-4 py-2 bg-[#06101f] text-xs text-slate-300 whitespace-nowrap border-t border-white/10">
       <button onclick="filterCategory('ALL')" class="hover:text-white font-bold">الكل</button>
       <button onclick="filterCategory('Men')" class="hover:text-white font-bold">Men</button>
@@ -81,9 +257,9 @@
     </div>
   </header>
 
-  <main id="app-root" class="min-h-[80vh] w-full overflow-x-hidden"></main>
+  <main id="app-root" class="min-h-screen w-full overflow-x-hidden"></main>
 
-  <footer class="navy-bg text-slate-300 py-10 px-6 mt-20 text-center text-sm w-full">
+  <footer id="site-footer" class="hidden navy-bg text-slate-300 py-10 px-6 mt-20 text-center text-sm w-full">
     <p id="footer-store-name" class="text-white font-extrabold text-lg mb-2">VINTAGE_STORE</p>
     <p class="text-slate-400">الدفع عند الاستلام (Cash on Delivery) متاح لجميع الطلبات</p>
   </footer>
@@ -108,7 +284,16 @@
 
     const defaultDB = {
       settings: { storeName: "VINTAGE_STORE", logoUrl: "", storeUrl: "" },
-      users: [{ id: "u1", name: "أحمد الزبون", email: "user@vintage.com", password: "123", phone: "0501112233", role: "CUSTOMER" }],
+      users: [
+        {
+          id: "u1",
+          name: "أحمد الزبون",
+          email: "user@vintage.com",
+          password: "123",
+          phone: "0501112233",
+          role: "CUSTOMER"
+        }
+      ],
       coupons: [{ id: "c1", code: "VINTAGE20", discountPct: 20, active: true }],
       products: [
         {
@@ -160,6 +345,7 @@
 
     onValue(dbRef, (snapshot) => {
       const val = snapshot.val();
+
       if (!val) {
         saveDB(defaultDB);
       } else {
@@ -169,7 +355,7 @@
     });
 
     let state = {
-      view: "STORE",
+      view: "SPLASH",
       currentUser: JSON.parse(sessionStorage.getItem("cust_user") || "null"),
       cart: JSON.parse(localStorage.getItem("cust_cart") || "[]"),
       wishlist: JSON.parse(localStorage.getItem("cust_wish") || "[]"),
@@ -181,9 +367,21 @@
       appliedCoupon: null
     };
 
+    function initSplashTimer() {
+      if (state.view === "SPLASH") {
+        setTimeout(() => {
+          if (state.view === "SPLASH") {
+            state.view = state.currentUser ? "STORE" : "AUTH";
+            render();
+          }
+        }, 3000);
+      }
+    }
+
     window.showToast = function(msg, isError = false) {
       const container = document.getElementById("toast-container");
       const el = document.createElement("div");
+
       el.className = `px-6 py-3 rounded-xl shadow-xl text-sm font-bold fade-in ${isError ? "bg-red-600 text-white" : "navy-bg text-white border border-white/20"}`;
       el.textContent = msg;
       container.appendChild(el);
@@ -192,12 +390,14 @@
 
     window.navigate = function(view, id = null) {
       state.view = view;
+
       if (view === "PRODUCT_DETAIL" && id) {
         state.selectedProductId = id;
         const prod = currentDB.products.find(p => p.id === id);
         state.selectedVariantId = prod?.variants?.[0]?.id || null;
         state.qty = 1;
       }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
       render();
     };
@@ -215,6 +415,7 @@
         state.wishlist.push(id);
         showToast("تمت الإضافة للمفضلة ❤️");
       }
+
       localStorage.setItem("cust_wish", JSON.stringify(state.wishlist));
       render();
     };
@@ -229,6 +430,7 @@
       }
 
       const existing = state.cart.find(i => i.variantId === variantId);
+
       if (existing) {
         if (existing.quantity + quantity > variant.stock) {
           showToast("تجاوزت الحد المتوفر بالمخزون", true);
@@ -251,6 +453,7 @@
       localStorage.setItem("cust_cart", JSON.stringify(state.cart));
       showToast("تمت الإضافة إلى السلة 🛍️");
       render();
+
       if (goCheckout) navigate("CHECKOUT");
     };
 
@@ -263,6 +466,7 @@
     window.applyCouponCode = function() {
       const code = document.getElementById("cp-in").value.trim().toUpperCase();
       const c = currentDB.coupons.find(x => x.code === code && x.active !== false);
+
       if (c) {
         state.appliedCoupon = c;
         showToast("تم تطبيق الخصم");
@@ -274,6 +478,7 @@
 
     window.placeOrder = function(e) {
       e.preventDefault();
+
       const name = document.getElementById("chk-name").value.trim();
       const phone = document.getElementById("chk-phone").value.trim();
       const email = document.getElementById("chk-email").value.trim();
@@ -282,15 +487,19 @@
       for (const item of state.cart) {
         const prod = currentDB.products.find(p => p.id === item.productId);
         const variant = (prod?.variants || []).find(v => v.id === item.variantId);
+
         if (!variant || variant.stock < item.quantity) {
           showToast(`نفذت الكمية للمنتج: ${item.name}`, true);
           return;
         }
+
         variant.stock -= item.quantity;
       }
 
       const subtotal = state.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-      const discount = state.appliedCoupon ? (subtotal * state.appliedCoupon.discountPct) / 100 : 0;
+      const discount = state.appliedCoupon
+        ? (subtotal * state.appliedCoupon.discountPct) / 100
+        : 0;
       const orderNum = "VNT-" + Math.floor(10000 + Math.random() * 90000);
 
       currentDB.orders.unshift({
@@ -320,11 +529,14 @@
 
     window.handleAuth = function(e, mode) {
       e.preventDefault();
+
       if (mode === "LOGIN") {
         const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-pass").value.trim();
         const user = currentDB.users.find(u => u.email === email && u.password === password);
+
         if (!user) return showToast("بيانات الدخول غير صحيحة", true);
+
         state.currentUser = user;
         sessionStorage.setItem("cust_user", JSON.stringify(user));
         showToast(`أهلاً بك ${user.name}`);
@@ -334,11 +546,19 @@
         const phone = document.getElementById("reg-phone").value.trim();
         const email = document.getElementById("reg-email").value.trim();
         const password = document.getElementById("reg-pass").value.trim();
-        const newUser = { id: "u_" + Date.now(), name, email, password, phone, role: "CUSTOMER" };
+        const newUser = {
+          id: "u_" + Date.now(),
+          name,
+          email,
+          password,
+          phone,
+          role: "CUSTOMER"
+        };
+
         currentDB.users.push(newUser);
         saveDB(currentDB);
         state.currentUser = newUser;
-        sessionStorage.setItem("cust_user", JSON.stringify(newUser));
+        sessionStorage.setItem("cust_user", JSON.stringify(user));
         showToast("تم إنشاء الحساب بنجاح");
         navigate("STORE");
       }
@@ -347,14 +567,33 @@
     window.logoutCustomer = function() {
       state.currentUser = null;
       sessionStorage.removeItem("cust_user");
+      state.view = "AUTH";
       render();
     };
 
-    window.updateSearch = function(val) { state.filters.search = val; render(); };
-    window.updateSize = function(val) { state.filters.size = val; render(); };
-    window.updateMaxPrice = function(val) { state.filters.maxPrice = Number(val); render(); };
-    window.selectVariant = function(id) { state.selectedVariantId = id; render(); };
-    window.updateQty = function(val) { state.qty = Number(val); };
+    window.updateSearch = function(val) {
+      state.filters.search = val;
+      render();
+    };
+
+    window.updateSize = function(val) {
+      state.filters.size = val;
+      render();
+    };
+
+    window.updateMaxPrice = function(val) {
+      state.filters.maxPrice = Number(val);
+      render();
+    };
+
+    window.selectVariant = function(id) {
+      state.selectedVariantId = id;
+      render();
+    };
+
+    window.updateQty = function(val) {
+      state.qty = Number(val);
+    };
 
     function render() {
       const db = currentDB;
@@ -363,6 +602,7 @@
 
       const logoImg = document.getElementById("nav-logo");
       const logoPlace = document.getElementById("nav-logo-placeholder");
+
       if (db.settings.logoUrl) {
         logoImg.src = db.settings.logoUrl;
         logoImg.classList.remove("hidden");
@@ -383,12 +623,118 @@
       wb.classList.toggle("hidden", state.wishlist.length === 0);
 
       document.getElementById("auth-area").innerHTML = state.currentUser
-        ? `<button onclick="logoutCustomer()" class="text-xs bg-white text-[#0A192F] px-2.5 py-2 rounded-lg font-bold truncate max-w-[80px]">خروج</button>`
-        : `<button onclick="navigate('AUTH')" class="text-xs bg-white text-[#0A192F] px-3 py-2 rounded-lg font-bold">دخول</button>`;
+        ? `<button aria-label="تسجيل الخروج" title="تسجيل الخروج" onclick="logoutCustomer()" class="inline-flex items-center gap-1 text-xs bg-white text-[#0A192F] px-2.5 py-2 rounded-lg font-bold truncate max-w-[80px]"><i data-lucide="log-out" class="w-4 h-4"></i><span>خروج</span></button>`
+        : "";
 
       const root = document.getElementById("app-root");
+      const showStoreChrome = !["SPLASH", "AUTH"].includes(state.view);
 
-      if (state.view === "STORE") {
+      document.getElementById("site-header").classList.toggle("hidden", !showStoreChrome);
+      document.getElementById("site-footer").classList.toggle("hidden", !showStoreChrome);
+
+      if (state.view === "SPLASH") {
+        root.innerHTML = `
+          <section class="welcome-screen relative min-h-screen overflow-hidden flex items-center justify-center px-5 py-16 text-center text-white">
+            <div class="welcome-orb pointer-events-none absolute w-[min(80vw,650px)] aspect-square rounded-full"></div>
+
+            <div class="relative z-10 max-w-3xl">
+              <div class="welcome-reveal mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-full border border-[#d9c7a4]/60 text-xl font-extrabold tracking-widest text-[#e8d9bd]">
+                V / S
+              </div>
+
+              <p class="welcome-reveal welcome-delay-1 mb-4 text-[10px] font-bold uppercase tracking-[.3em] text-[#d9c7a4]">
+                TIMELESS STYLE · THOUGHTFULLY SELECTED
+              </p>
+
+              <h1 class="welcome-reveal welcome-delay-2 text-4xl font-extrabold leading-tight tracking-wide sm:text-6xl">
+                Welcome to
+                <span class="mt-2 block text-[#d9c7a4]">VINTAGE_STORE</span>
+              </h1>
+
+              <p class="welcome-reveal welcome-delay-3 mt-5 text-sm text-slate-300 sm:text-base">
+                Discover timeless elegance &amp; modern classics
+              </p>
+
+              <button
+                onclick="navigate(state.currentUser ? 'STORE' : 'AUTH')"
+                class="welcome-reveal welcome-delay-3 mt-9 border border-white/70 bg-white px-8 py-3 text-sm font-extrabold text-[#0A192F] transition hover:bg-[#e9dfcf]"
+              >
+                ابدأ الآن
+              </button>
+
+              <p class="mt-8 text-[10px] tracking-widest text-white/50">
+                EVERYDAY ELEGANCE · VINTAGE_STORE
+              </p>
+            </div>
+          </section>
+        `;
+
+        initSplashTimer();
+      }
+
+      else if (state.view === "AUTH") {
+        root.innerHTML = `
+          <section class="auth-screen min-h-screen bg-slate-50 px-4 py-12 sm:py-16 fade-in">
+            <div class="mx-auto max-w-5xl">
+              <div class="mb-9 text-center">
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-[.25em] text-slate-500">
+                  VINTAGE_STORE · YOUR STYLE, YOUR WAY
+                </p>
+                <h2 class="text-2xl font-extrabold text-[#0A192F] sm:text-3xl">
+                  أهلاً بك في المتجر
+                </h2>
+                <p class="mt-3 text-xs text-slate-500 sm:text-sm">
+                  أنشئ حساباً جديداً أو سجّل دخولك لمتابعة التسوق والطلبات.
+                </p>
+              </div>
+
+              <div class="grid gap-5 md:grid-cols-2">
+                <form onsubmit="handleAuth(event, 'LOGIN')" class="auth-card space-y-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+                  <div class="mb-5 border-b border-slate-100 pb-4">
+                    <span class="text-[10px] font-bold tracking-widest text-slate-400">WELCOME BACK</span>
+                    <h3 class="mt-1 text-lg font-extrabold text-[#0A192F]">تسجيل الدخول</h3>
+                  </div>
+
+                  <label class="block text-xs font-bold text-slate-600" for="login-email">البريد الإلكتروني</label>
+                  <input id="login-email" required type="email" autocomplete="email" placeholder="name@example.com" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <label class="block text-xs font-bold text-slate-600" for="login-pass">كلمة المرور</label>
+                  <input id="login-pass" required type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <button type="submit" class="w-full rounded-xl bg-[#0A192F] py-3 text-sm font-bold text-white transition hover:bg-[#172b43]">
+                    تسجيل الدخول
+                  </button>
+                </form>
+
+                <form onsubmit="handleAuth(event, 'REGISTER')" class="auth-card space-y-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+                  <div class="mb-5 border-b border-slate-100 pb-4">
+                    <span class="text-[10px] font-bold tracking-widest text-slate-400">JOIN OUR STORE</span>
+                    <h3 class="mt-1 text-lg font-extrabold text-[#0A192F]">إنشاء حساب جديد</h3>
+                  </div>
+
+                  <label class="block text-xs font-bold text-slate-600" for="reg-name">الاسم الكامل</label>
+                  <input id="reg-name" required autocomplete="name" placeholder="الاسم الكامل" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <label class="block text-xs font-bold text-slate-600" for="reg-phone">رقم الهاتف</label>
+                  <input id="reg-phone" required type="tel" autocomplete="tel" placeholder="رقم الهاتف" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <label class="block text-xs font-bold text-slate-600" for="reg-email">البريد الإلكتروني</label>
+                  <input id="reg-email" required type="email" autocomplete="email" placeholder="name@example.com" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <label class="block text-xs font-bold text-slate-600" for="reg-pass">كلمة المرور</label>
+                  <input id="reg-pass" required minlength="8" type="password" autocomplete="new-password" placeholder="٨ أحرف على الأقل" class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none transition focus:border-[#0A192F]" />
+
+                  <button type="submit" class="w-full rounded-xl border border-[#0A192F] py-3 text-sm font-bold text-[#0A192F] transition hover:bg-[#0A192F] hover:text-white">
+                    إنشاء الحساب
+                  </button>
+                </form>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      else if (state.view === "STORE") {
         const filtered = db.products.filter(p => {
           const matchCat = state.filters.category === "ALL" || p.category === state.filters.category;
           const matchSearch = p.name.toLowerCase().includes(state.filters.search.toLowerCase());
@@ -412,7 +758,7 @@
 
           <section id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <div class="bg-slate-50 p-4 rounded-2xl border mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-              <input type="text" placeholder="ابحث عن منتج..." value="${state.filters.search}" oninput="updateSearch(this.value)" class="border rounded-xl px-4 py-2.5 text-sm w-full" />
+              <input type="text" placeholder="ابحث عن منتج..." value="${state.filters.search}" oninput="updateSearch(this.value)" class="border rounded-xl px-4 py-2.5 text-sm w-full bg-white" />
               <select onchange="updateSize(this.value)" class="border rounded-xl px-3 py-2.5 text-sm bg-white font-bold w-full">
                 <option value="ALL">جميع المقاسات</option>
                 <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
@@ -428,6 +774,7 @@
                 ${filtered.map(p => {
                   const stock = (p.variants || []).reduce((s, v) => s + v.stock, 0);
                   const wished = state.wishlist.includes(p.id);
+
                   return `
                     <div class="bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
                       <div onclick="navigate('PRODUCT_DETAIL', '${p.id}')" class="relative aspect-[3/4] bg-slate-100 cursor-pointer overflow-hidden">
@@ -460,6 +807,7 @@
         const p = db.products.find(x => x.id === state.selectedProductId);
         if (!p) return navigate("STORE");
         const v = (p.variants || []).find(x => x.id === state.selectedVariantId) || p.variants?.[0];
+
         root.innerHTML = `
           <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
             <button onclick="navigate('STORE')" class="mb-4 text-xs sm:text-sm font-bold text-slate-600">← العودة للمتجر</button>
@@ -482,7 +830,7 @@
                   </div>
                 </div>
                 <div class="flex gap-2 pt-2">
-                  <input type="number" min="1" max="${v?.stock || 1}" value="${state.qty}" onchange="updateQty(this.value)" class="w-16 border rounded-xl text-center font-bold text-sm" />
+                  <input type="number" min="1" max="${v?.stock || 1}" value="${state.qty}" onchange="updateQty(this.value)" class="w-16 border rounded-xl text-center font-bold text-sm bg-white" />
                   <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, false)" class="flex-1 navy-bg text-white py-3 rounded-xl text-xs sm:text-sm font-bold">Add to Cart</button>
                   <button onclick="addToCart('${p.id}', '${v?.id}', ${state.qty}, true)" class="flex-1 border-2 border-[#0A192F] py-3 rounded-xl text-xs sm:text-sm font-bold">Buy Now</button>
                 </div>
@@ -495,6 +843,7 @@
       else if (state.view === "CART") {
         const sub = state.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
         const disc = state.appliedCoupon ? (sub * state.appliedCoupon.discountPct) / 100 : 0;
+
         root.innerHTML = `
           <div class="max-w-2xl mx-auto px-4 py-8 fade-in">
             <h2 class="text-xl sm:text-2xl font-extrabold mb-6">سلة المشتريات</h2>
@@ -513,10 +862,12 @@
                   </div>
                 `).join("")}
               </div>
+
               <div class="flex gap-2 mb-6">
-                <input id="cp-in" placeholder="كود الخصم (VINTAGE20)" class="flex-1 border rounded-xl px-3 py-2.5 text-xs sm:text-sm uppercase" />
+                <input id="cp-in" placeholder="كود الخصم (VINTAGE20)" class="flex-1 border rounded-xl px-3 py-2.5 text-xs sm:text-sm uppercase bg-white" />
                 <button onclick="applyCouponCode()" class="bg-slate-800 text-white px-4 rounded-xl text-xs sm:text-sm font-bold">تطبيق</button>
               </div>
+
               <div class="navy-bg text-white p-5 rounded-2xl flex justify-between items-center">
                 <div>
                   <p class="text-[11px] text-slate-300">الإجمالي بعد الخصم:</p>
@@ -534,10 +885,10 @@
           <div class="max-w-lg mx-auto px-4 py-8 fade-in">
             <h2 class="text-xl sm:text-2xl font-extrabold mb-6">إتمام الطلب (الدفع عند الاستلام)</h2>
             <form onsubmit="placeOrder(event)" class="bg-slate-50 p-5 rounded-2xl border space-y-3">
-              <input id="chk-name" required placeholder="الاسم الكامل" value="${state.currentUser?.name || ""}" class="w-full border rounded-xl p-3 text-sm" />
-              <input id="chk-phone" required placeholder="رقم الهاتف" value="${state.currentUser?.phone || ""}" class="w-full border rounded-xl p-3 text-sm" />
-              <input id="chk-email" required type="email" placeholder="البريد الإلكتروني" value="${state.currentUser?.email || ""}" class="w-full border rounded-xl p-3 text-sm" />
-              <textarea id="chk-address" required placeholder="عنوان التوصيل بالتفصيل" class="w-full border rounded-xl p-3 text-sm"></textarea>
+              <input id="chk-name" required placeholder="الاسم الكامل" value="${state.currentUser?.name || ""}" class="w-full border rounded-xl p-3 text-sm bg-white" />
+              <input id="chk-phone" required placeholder="رقم الهاتف" value="${state.currentUser?.phone || ""}" class="w-full border rounded-xl p-3 text-sm bg-white" />
+              <input id="chk-email" required type="email" placeholder="البريد الإلكتروني" value="${state.currentUser?.email || ""}" class="w-full border rounded-xl p-3 text-sm bg-white" />
+              <textarea id="chk-address" required placeholder="عنوان التوصيل بالتفصيل" class="w-full border rounded-xl p-3 text-sm bg-white"></textarea>
               <button type="submit" class="w-full navy-bg text-white py-3 rounded-xl font-extrabold text-sm">تأكيد الطلب (Place Order)</button>
             </form>
           </div>
@@ -545,7 +896,11 @@
       }
 
       else if (state.view === "MY_ORDERS") {
-        const myOrders = db.orders.filter(o => state.myOrderNumbers.includes(o.orderNumber) || (state.currentUser && o.userId === state.currentUser.id));
+        const myOrders = db.orders.filter(o =>
+          state.myOrderNumbers.includes(o.orderNumber) ||
+          (state.currentUser && o.userId === state.currentUser.id)
+        );
+
         root.innerHTML = `
           <div class="max-w-3xl mx-auto px-4 py-8 fade-in">
             <h2 class="text-xl sm:text-2xl font-extrabold mb-6">طلباتي وحالة التوصيل</h2>
@@ -558,7 +913,9 @@
                         <span class="font-extrabold text-sm">${o.orderNumber}</span>
                         <span class="navy-bg text-white text-[10px] px-2 py-0.5 rounded-full">${o.status}</span>
                       </div>
-                      <p class="text-[11px] text-slate-500 mt-1">${(o.items || []).map(i => `${i.name} (${i.size}) × ${i.quantity}`).join(" ، ")}</p>
+                      <p class="text-[11px] text-slate-500 mt-1">
+                        ${(o.items || []).map(i => `${i.name} (${i.size}) × ${i.quantity}`).join(" ، ")}
+                      </p>
                     </div>
                     <span class="font-extrabold text-base sm:text-lg whitespace-nowrap">$${o.totalAmount.toFixed(2)}</span>
                   </div>
@@ -571,6 +928,7 @@
 
       else if (state.view === "WISHLIST") {
         const list = db.products.filter(p => state.wishlist.includes(p.id));
+
         root.innerHTML = `
           <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
             <h2 class="text-xl sm:text-2xl font-extrabold mb-6">المفضلة (${list.length})</h2>
@@ -584,29 +942,6 @@
                   </div>
                 </div>
               `).join("")}
-            </div>
-          </div>
-        `;
-      }
-
-      else if (state.view === "AUTH") {
-        root.innerHTML = `
-          <div class="max-w-md mx-auto px-4 py-8 fade-in">
-            <div class="bg-slate-50 p-5 rounded-2xl border space-y-6">
-              <h2 class="text-lg font-extrabold text-center">تسجيل دخول الزبائن</h2>
-              <form onsubmit="handleAuth(event, 'LOGIN')" class="space-y-3">
-                <input id="login-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
-                <input id="login-pass" required type="password" placeholder="كلمة المرور" class="w-full border rounded-xl p-3 text-sm" />
-                <button type="submit" class="w-full navy-bg text-white py-3 rounded-xl font-bold text-sm">دخول</button>
-              </form>
-              <form onsubmit="handleAuth(event, 'REGISTER')" class="space-y-3 border-t pt-4">
-                <h3 class="text-xs font-bold text-center">إنشاء حساب جديد</h3>
-                <input id="reg-name" required placeholder="الاسم" class="w-full border rounded-xl p-3 text-sm" />
-                <input id="reg-phone" required placeholder="الهاتف" class="w-full border rounded-xl p-3 text-sm" />
-                <input id="reg-email" required type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3 text-sm" />
-                <input id="reg-pass" required type="password" placeholder="كلمة المرور" class="w-full border rounded-xl p-3 text-sm" />
-                <button type="submit" class="w-full border-2 border-[#0A192F] py-3 rounded-xl font-bold text-sm">تسجيل</button>
-              </form>
             </div>
           </div>
         `;
